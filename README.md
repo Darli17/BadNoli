@@ -10,4 +10,4 @@ but I think I'll fix them in the future.
 
 See ya :D
 
-loadstring(game:HttpGet("
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Darli17/BadNoli/refs/heads/main/badnoli"))()
