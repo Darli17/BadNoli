@@ -1,3 +1,6 @@
+-- example script by https://github.com/mstudio45/LinoriaLib/blob/main/Example.lua and modified by deivid
+-- You can suggest changes with a pull request or something
+
 local repo = "https://raw.githubusercontent.com/NightForRoblox/Obsidian/main/"
 local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
@@ -21,7 +24,7 @@ local Window = Library:CreateWindow({
 	-- but you do not need to define them unless you are changing them :)
 
 	Title = "",
-	Footer = "badnoli [alpha] for Hotel- by @thedarli",
+	Footer = "badnoli v1.1 [alpha] for Hotel- by @thedarli ",
 	Icon = 97249090324248,
   IconSize = UDim2.fromOffset(120, 61),
 	NotifySide = "Right",
@@ -58,7 +61,7 @@ MovementGroupBox:AddToggle("SpeedhackToggle", {
 	end,
 })
 
-MovementGroupBox:AddSlider("SpeedSlider", {
+MovementGroupBox:AddSlider("SpeedhackSlider", {
     Text = "WalkSpeed:",
     Default = 15,
     Min = 15,
@@ -70,7 +73,7 @@ MovementGroupBox:AddSlider("SpeedSlider", {
 		end,
 })
 
-MovementGroupBox:AddToggle("FullbrightToggle", {
+MovementGroupBox:AddToggle("Fullbright", {
 	Text = "Enable Fullbright",
 	Tooltip = "my eyes!", -- Information shown when you hover over the toggle
 
@@ -86,7 +89,99 @@ MovementGroupBox:AddToggle("FullbrightToggle", {
 
 local PlayerGroupBox = Tabs.Main:AddRightGroupbox("Player")
 
-PlayerGroupBox:AddToggle("NoclipToggle", {
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local flying = false
+local flySpeed = 15
+
+local function startFlying()
+    flying = true
+    
+ 
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(1000000, 1000000, 1000000)
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.Parent = rootPart
+
+ 
+    local userInputService = game:GetService("UserInputService")
+    
+
+    while flying do
+        local moveDirection = Vector3.new(0, 0, 0)
+        
+        if userInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + workspace.CurrentCamera.CFrame.LookVector
+        end
+        if userInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - workspace.CurrentCamera.CFrame.LookVector
+        end
+        if userInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - workspace.CurrentCamera.CFrame.RightVector
+        end
+        if userInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + workspace.CurrentCamera.CFrame.RightVector
+        end
+        if userInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+        end
+        if userInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+            moveDirection = moveDirection - Vector3.new(0, 1, 0)
+        end
+        
+        bodyVelocity.Velocity = moveDirection * flySpeed
+        wait(0.1)
+    end
+end
+
+
+local function stopFlying()
+    flying = false
+    rootPart:FindFirstChild("BodyVelocity"):Destroy()
+end
+
+PlayerGroupBox:AddToggle("Fly", {
+	Text = "Enable Fly",
+	Tooltip = " 'wings' ", -- Information shown when you hover over the toggle
+
+	Default = false, -- Default value (true / false)
+	Disabled = false, -- Will disable the toggle (true / false)
+	Visible = true, -- Will make the toggle invisible (true / false)
+	Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
+
+	Callback = function(Value)
+			if Value == true then
+				startFlying()
+			else
+				stopFlying()
+			end
+	end,
+})
+	:AddKeyPicker("FlyKeybind", {
+    Default = "F",
+    Text = "Fly",
+    Mode = "Toggle", -- Options: "Toggle", "Hold", "Always"
+
+    -- Sets the toggle's value according to the keybind state if Mode is Toggle
+    SyncToggleState = true,
+		})
+PlayerGroupBox:AddSlider("FlySlider", {
+    Text = "FlySpeed:",
+    Default = 15,
+    Min = 5,
+    Max = 50,
+    Rounding = 1,
+    Compact = false,
+		
+		Callback = function(Value)
+			flySpeed = Value
+		end,
+})
+
+PlayerGroupBox:AddToggle("Noclip", {
 	Text = "Noclip",
 	Tooltip = "just noclip :)", -- Information shown when you hover over the toggle
 
@@ -100,7 +195,7 @@ PlayerGroupBox:AddToggle("NoclipToggle", {
 	end,
 })
 	:AddKeyPicker("NoclipKeybind", {
-    Default = "F",
+    Default = "N",
     Text = "Noclip",
     Mode = "Toggle", -- Options: "Toggle", "Hold", "Always"
 
@@ -110,32 +205,33 @@ PlayerGroupBox:AddToggle("NoclipToggle", {
 
 PlayerGroupBox:AddDivider()
 
-PlayerGroupBox:AddToggle("InstantPPToggle", {
+PlayerGroupBox:AddToggle("InstantPrompts", {
 	Text = "Instant Proximity Prompts",
-	Tooltip = "instant interact proximity popts :D", -- Information shown when you hover over the toggle
+	Tooltip = "Instantly delete hold time from proximity promps.", -- Information shown when you hover over the toggle
 
 	Default = false, -- Default value (true / false)
 	Disabled = false, -- Will disable the toggle (true / false)
 	Visible = true, -- Will make the toggle invisible (true / false)
 	Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
-
-	Callback = function(Value)
-
-	end,
 })
-PlayerGroupBox:AddToggle("AutoInteractPPToggle", {
-	Text = "Auto Interact PP",
-	Tooltip = "automaticly interact with proximity popts :D", -- Information shown when you hover over the toggle
+PlayerGroupBox:AddToggle("AutoInteract", {
+	Text = "Auto Interact",
+	Tooltip = "Automatiсally interact with proximity prompts.", -- Information shown when you hover over the toggle
 
 	Default = false, -- Default value (true / false)
 	Disabled = false, -- Will disable the toggle (true / false)
 	Visible = true, -- Will make the toggle invisible (true / false)
 	Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
-
-	Callback = function(Value)
-
-	end,
 })
+	:AddKeyPicker("AutoInteractKeybind", {
+    Default = "R",
+    Text = "Auto Interact",
+    Mode = "Toggle", -- Options: "Toggle", "Hold", "Always"
+
+    -- Sets the toggle's value according to the keybind state if Mode is Toggle
+    SyncToggleState = true,
+	})
+
 PlayerGroupBox:AddToggle("CrouchSpoofToggle", {
 	Text = "Crouch Spoof",
 	Tooltip = "Warning: Just A Attribute on you character!", -- Information shown when you hover over the toggle
@@ -184,7 +280,6 @@ PlayerGroupBox:AddSlider("FovSlider", {
 
 local GameGroupBox = Tabs.Main:AddRightGroupbox("Game")
 
-
 local ReviveButton = GameGroupBox:AddButton({
 	Text = "Revive",
 	Func = function()
@@ -227,18 +322,14 @@ local PlayAgainButton = GameGroupBox:AddButton({
 
 local RoomsGroupBox = Tabs.Main:AddLeftGroupbox("Rooms / Fun")
 
-RoomsGroupBox:AddToggle("GatesAndPDoorsToggle", {
-	Text = "Destroy Gates And Paintings Doors",
+RoomsGroupBox:AddToggle("DestroyPuzzles", {
+	Text = "Destroy Puzzle Doors",
 	Tooltip = "deletes all gates and paintings doors", -- Information shown when you hover over the toggle
 
 	Default = false, -- Default value (true / false)
 	Disabled = false, -- Will disable the toggle (true / false)
 	Visible = true, -- Will make the toggle invisible (true / false)
 	Risky = false, -- Makes the text red (the color can be changed using Library.Scheme.Red) (Default value = false)
-
-	Callback = function(Value)
-
-	end,
 })
 
 RoomsGroupBox:AddDivider()
@@ -281,9 +372,9 @@ local AllItemsButton = PreRunShopGroupBox:AddButton({
 
 game:GetService("RunService").RenderStepped:Connect(function()
     if Toggles.SpeedhackToggle.Value == true then
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Options.SpeedSlider.Value
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Options.SpeedhackSlider.Value
     end
-		if Toggles.FullbrightToggle.Value == true then
+		if Toggles.Fullbright.Value == true then
 				local lighting = game:GetService("Lighting");
 				lighting.Ambient = Color3.fromRGB(255, 255, 255);
 				lighting.Brightness = 1;
@@ -294,29 +385,17 @@ game:GetService("RunService").RenderStepped:Connect(function()
 				lighting.Brightness = 0;
 				lighting.FogEnd = 9999;
 		end
-		if Toggles.NoclipToggle.Value == true then
+		if Toggles.Noclip.Value == true then
 				game.Players.LocalPlayer.Character.Collision.CanCollide = false
 				game.Players.LocalPlayer.Character.HumanoidRootPart.CanCollide = false
 			else
 				game.Players.LocalPlayer.Character.Collision.CanCollide = true
 				game.Players.LocalPlayer.Character.HumanoidRootPart.CanCollide = true
 		end
-		if Toggles.GatesAndPDoorsToggle.Value == true then
-				local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom.Value
-				local activeDestroyGatesAndPDoors = true
-				activeDestroyGatesAndPDoors = true
-				if activeDestroyGatesAndPDoors == true then
-						if workspace.CurrentRooms[LatestRoom]:WaitForChild("Gate") then
-							workspace.CurrentRooms[LatestRoom]:WaitForChild("Gate"):Destroy()
-						end
-						if workspace.CurrentRooms[LatestRoom].Assets:WaitForChild("Paintings"):WaitForChild("MovingDoor") then
-							workspace.CurrentRooms[LatestRoom].Assets:WaitForChild("Paintings").MovingDoor:Destroy()
-						end
-				end
-			else
-				activeDestroyGatesAndPDoors = false
-		end
-		if Toggles.AutoInteractPPToggle.Value == true then
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+		if Toggles.AutoInteract.Value == true then
 					local player = game.Players.LocalPlayer
 					local character = player.Character or player.CharacterAdded:Wait()
 					local rootPart = character:WaitForChild("HumanoidRootPart")
@@ -328,6 +407,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 					end)
 
 					if active == true then
+							task.wait(0.02)
 							for _, instance in ipairs(workspace:GetDescendants()) do
 									if instance:IsA("ProximityPrompt") then
 											local prompt = instance
@@ -348,9 +428,8 @@ game:GetService("RunService").RenderStepped:Connect(function()
 			else
 					active = false
 		end
-		if Toggles.InstantPPToggle.Value == true then
+		if Toggles.InstantPrompts.Value == true then
 			local activeInstant = true
-			print(activeInstant)
 			if activeInstant == true then
 				for i,v in ipairs(game:GetService("Workspace"):GetDescendants()) do
  					if v.ClassName == "ProximityPrompt" then
@@ -361,7 +440,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
 
 		else
 				activeInstant = false
-				print(activeInstant)
 		end
 end)
 
@@ -450,3 +528,21 @@ ThemeManager:ApplyToTab(Tabs["UI Settings"])
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
+
+while task.wait(0.02) do
+		if Toggles.DestroyPuzzles.Value == true then
+				local LatestRoom = game.ReplicatedStorage.GameData.LatestRoom.Value
+				local activeDestroyGatesAndPDoors = true
+				activeDestroyGatesAndPDoors = true
+				if activeDestroyGatesAndPDoors == true then
+						if workspace.CurrentRooms[LatestRoom]:WaitForChild("Gate") then
+							workspace.CurrentRooms[LatestRoom]:WaitForChild("Gate"):Destroy()
+						end
+						if workspace.CurrentRooms[LatestRoom].Assets:WaitForChild("Paintings"):WaitForChild("MovingDoor") then
+							workspace.CurrentRooms[LatestRoom].Assets:WaitForChild("Paintings"):WaitForChild("MovingDoor"):Destroy()
+						end
+				end
+			else
+				activeDestroyGatesAndPDoors = false
+		end
+end
